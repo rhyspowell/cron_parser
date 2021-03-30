@@ -1,6 +1,5 @@
 import sys
 
-data_to_parse = {}
 data_parsed = {}
 
 
@@ -19,21 +18,13 @@ def help():
     )
 
 def process_values(requested_input, value_type):
-    if value_type == "minutes":
-        x = 0
-        y = 60
-    elif value_type == "hours":
-        x = 0
-        y = 12
-    elif value_type == "dom":
-        x = 1
-        y = 31
-    elif value_type == "month":
-        x = 1
-        y = 12
-    elif value_type == "dow":
-        x = 1
-        y = 7
+
+    options = {'minutes': (0,60), 'hours': (0,60), 'dom': (0,31), 'month': (1,12), 'dow': (1,7)}
+    if value_type in options:
+        x = options[value_type][0]
+        y = options[value_type][1]
+    print(x)
+    print(y)
 
     value = ""
     if requested_input == '*':
