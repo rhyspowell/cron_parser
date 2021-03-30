@@ -1,7 +1,5 @@
 import sys
 
-data_parsed = {}
-
 
 def help():
     print(
@@ -28,13 +26,15 @@ def create_value_string(value, n):
 
 
 def process_values(requested_input, value_type):
+    print(requested_input)
+    print(value_type)
 
     options = {
         "minutes": (0, 60),
         "hours": (0, 24),
-        "dom": (1, 32),
+        "day of month": (1, 32),
         "month": (1, 13),
-        "dow": (0, 7),
+        "day of week": (0, 7),
     }
     if value_type in options:
         x = options[value_type][0]
@@ -72,22 +72,20 @@ def main(inputs):
         help()
         return 1
 
+    data_parsed = {}
+
     split_inputs = inputs[1].split()
+    split_names = {
+        "minutes": split_inputs[0],
+        "hours": split_inputs[1],
+        "day of month": split_inputs[2],
+        "month": split_inputs[3],
+        "day of week": split_inputs[4],
+    }
 
-    minutes_value = process_values(split_inputs[0], "minutes")
-    data_parsed["minute"] = minutes_value
-
-    hours_value = process_values(split_inputs[1], "hours")
-    data_parsed["hours"] = hours_value
-
-    dom_value = process_values(split_inputs[2], "dom")
-    data_parsed["day of month"] = dom_value
-
-    month_value = process_values(split_inputs[3], "month")
-    data_parsed["month"] = month_value
-
-    dow_value = process_values(split_inputs[4], "dow")
-    data_parsed["day of week"] = dow_value
+    for key in split_names:
+        processed_value = process_values(split_names[key], key)
+        data_parsed[key] = processed_value
 
     data_parsed["command"] = split_inputs[5]
 
