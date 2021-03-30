@@ -1,14 +1,10 @@
 import pytest
 
-from cron_parser import __version__, check_args
+from cron_parser import __version__, process_values
 
 
 def test_version():
     assert __version__ == '0.1.0'
-
-def test_invalid_args():
-    result_returned = check_args()
-    assert "Expected" in result_returned
 
 @pytest.mark.parametrize("when, expected_result", [
     ("*", list(range(0,60))),
