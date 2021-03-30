@@ -31,10 +31,10 @@ def process_values(requested_input, value_type):
 
     options = {
         "minutes": (0, 60),
-        "hours": (0, 60),
-        "dom": (0, 31),
-        "month": (1, 12),
-        "dow": (1, 7),
+        "hours": (0, 24),
+        "dom": (1, 32),
+        "month": (1, 13),
+        "dow": (0, 7),
     }
     if value_type in options:
         x = options[value_type][0]
@@ -84,10 +84,10 @@ def main(inputs):
     data_parsed["day of month"] = dom_value
 
     month_value = process_values(split_inputs[3], "month")
-    data_parsed["month"] = dom_value
+    data_parsed["month"] = month_value
 
-    month_value = process_values(split_inputs[4], "dow")
-    data_parsed["day of week"] = dom_value
+    dow_value = process_values(split_inputs[4], "dow")
+    data_parsed["day of week"] = dow_value
 
     data_parsed["command"] = split_inputs[5]
 
