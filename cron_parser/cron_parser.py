@@ -18,6 +18,15 @@ def help():
     )
 
 
+def create_value_string(value, n):
+    if value:
+        value = value + " " + str(n)
+    else:
+        value = str(n)
+
+    return value
+
+
 def process_values(requested_input, value_type):
 
     options = {
@@ -30,17 +39,12 @@ def process_values(requested_input, value_type):
     if value_type in options:
         x = options[value_type][0]
         y = options[value_type][1]
-    print(x)
-    print(y)
 
     value = ""
     if requested_input == "*":
         print("*")
         for n in range(x, y):
-            if value:
-                value = value + " " + str(n)
-            else:
-                value = str(n)
+            value = create_value_string(value, n)
     elif "/" in requested_input:
         print("/")
         start_repeat = requested_input.split("/")
@@ -49,19 +53,13 @@ def process_values(requested_input, value_type):
         else:
             n = int(start_repeat[0])
         while n < y:
-            if value:
-                value = value + " " + str(n)
-            else:
-                value = str(n)
+            value = create_value_string(value, n)
             n = n + int(start_repeat[1])
     elif "," in requested_input:
         print(",")
         start_repeat = requested_input.split(",")
         for n in start_repeat:
-            if value:
-                value = value + " " + str(n)
-            else:
-                value = str(n)
+            value = create_value_string(value, n)
     else:
         print("Single value")
         value = requested_input
