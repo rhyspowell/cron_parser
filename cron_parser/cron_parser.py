@@ -52,12 +52,12 @@ def process_values(requested_input, value_type):
 
     value = ""
     try:
-        #simple glob catch
+        # simple glob catch
         if requested_input == "*":
             for n in range(x, y):
                 value = create_value_string(value, n)
-        
-        #manage span
+
+        # manage span
         elif "/" in requested_input:
             start_repeat = requested_input.split("/")
             if start_repeat[0] == "*":
@@ -70,14 +70,14 @@ def process_values(requested_input, value_type):
             while n < y:
                 value = create_value_string(value, n)
                 n = n + int(start_repeat[1])
-        
-        #manage the list options
+
+        # manage the list options
         elif "," in requested_input:
             start_repeat = requested_input.split(",")
             for n in start_repeat:
                 value = create_value_string(value, n)
 
-        #manage the range options. Check that the ranges fit
+        # manage the range options. Check that the ranges fit
         elif "-" in requested_input:
             start_repeat = requested_input.split("-")
             if int(start_repeat[0]) < x:
@@ -85,23 +85,23 @@ def process_values(requested_input, value_type):
                 start_repeat[0] = x
             if int(start_repeat[1]) > y:
                 print("Warning incorrect value for range " + start_repeat[1])
-                #This has a -1 because we add one on full range to suit everything else
+                # This has a -1 because we add one on full range to suit everything else
                 start_repeat[1] = y - 1
             full_range = range(int(start_repeat[0]), int(start_repeat[1]) + 1)
             for n in full_range:
                 value = create_value_string(value, n)
-        
-        #check single ints are within the required range
+
+        # check single ints are within the required range
         elif int(requested_input) in range(x, y):
             value = requested_input
 
-        #if we don't match raise a value error
+        # if we don't match raise a value error
         else:
             raise ValueError("Input does not match patterns")
 
         return value
 
-    #this exception means that all bad characters get thrown out
+    # this exception means that all bad characters get thrown out
     except ValueError as error:
         print(error)
         print("Please confirm your cron information is correct")
@@ -128,7 +128,7 @@ def main(inputs):
         help()
         sys.exit("cron construction not right")
 
-    #Map the inputs to the values they should represent
+    # Map the inputs to the values they should represent
     split_names = {
         "minutes": inputs[0],
         "hours": inputs[1],
@@ -137,12 +137,12 @@ def main(inputs):
         "day of week": inputs[4],
     }
 
-    #pass the data for processing
+    # pass the data for processing
     for key in split_names:
         processed_value = process_values(split_names[key], key)
         data_parsed[key] = processed_value
 
-    #Not mapped as its a straight return value
+    # Not mapped as its a straight return value
     data_parsed["command"] = inputs[5]
 
     return data_parsed
