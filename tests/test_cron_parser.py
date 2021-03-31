@@ -12,10 +12,12 @@ def test_help(capsys):
     out, err = capsys.readouterr()
     assert "Expected" in out
     assert err == ''
-    main('')
+
+def test_main(capsys):
+    with pytest.raises(SystemExit):
+        main('')
     out, err = capsys.readouterr()
     assert "Expected" in out
-    assert err == ''
 
 @pytest.mark.parametrize("value, n, expected_result", [
     ("", "0", "0"),

@@ -79,7 +79,7 @@ def process_values(requested_input, value_type):
 def main(inputs):
     if len(inputs) < 2:
         help()
-        sys.exit()
+        sys.exit("Inputs missing")
 
     data_parsed = {}
 
