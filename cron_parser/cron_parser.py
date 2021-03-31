@@ -65,9 +65,11 @@ def process_values(requested_input, value_type):
             full_range = range(int(start_repeat[0]), int(start_repeat[1])+1)
             for n in full_range:
                 value = create_value_string(value, n)
-        else:
+        elif requested_input in range(x, y):
             value = requested_input
-
+        else:
+            raise ValueError("Input does not match patterns")
+            
         return value
     except ValueError as error:
         print(error)
@@ -77,7 +79,6 @@ def process_values(requested_input, value_type):
 
 
 def main(inputs):
-    print(inputs)
     if len(inputs) < 2:
         help()
         sys.exit("Input missing")
