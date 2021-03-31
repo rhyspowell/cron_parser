@@ -19,6 +19,11 @@ def test_main(capsys):
     out, err = capsys.readouterr()
     assert "Expected" in out
 
+    with pytest.raises(SystemExit):
+        main(['../cron_parser/cron_parser.py', '1-5 * * * * '])
+    out, err = capsys.readouterr()
+    assert "Expected" in out
+
 @pytest.mark.parametrize("value, n, expected_result", [
     ("", "0", "0"),
     ("1", "2", "1 2")

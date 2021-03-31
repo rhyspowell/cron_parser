@@ -77,16 +77,17 @@ def process_values(requested_input, value_type):
 
 
 def main(inputs):
+    print(inputs)
     if len(inputs) < 2:
         help()
-        sys.exit("Inputs missing")
+        sys.exit("Input missing")
 
     data_parsed = {}
 
     split_inputs = inputs[1].split()
     if len(split_inputs) != 6:
         help()
-        sys.exit()
+        sys.exit("cron construction not right")
     
     split_names = {
         "minutes": split_inputs[0],
