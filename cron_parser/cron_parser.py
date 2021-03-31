@@ -1,4 +1,4 @@
-import sys, errno
+import sys
 
 
 def help():
@@ -17,6 +17,7 @@ def help():
 
 
 def create_value_string(value, n):
+    """Just process value to string cleanly"""
     if value:
         value = value + " " + str(n)
     else:
@@ -26,6 +27,17 @@ def create_value_string(value, n):
 
 
 def process_values(requested_input, value_type):
+    """
+    core processing of the data supplied
+
+    map the range of values for each of the options
+
+    process the variance of each option following std cron formatting
+    so the range of numbers are accepted along with the special characters
+    "*", "-", "/"
+
+    tries to fix incorrect entries, will still return a warning, if not errors out
+    """
 
     options = {
         "minutes": (0, 60),
@@ -38,75 +50,108 @@ def process_values(requested_input, value_type):
         x = options[value_type][0]
         y = options[value_type][1]
 
-
     value = ""
     try:
+        #simple glob catch
         if requested_input == "*":
             for n in range(x, y):
                 value = create_value_string(value, n)
+        
+        #manage span
         elif "/" in requested_input:
             start_repeat = requested_input.split("/")
             if start_repeat[0] == "*":
-                n = 0
+                n = x
+            elif int(start_repeat[0]) < x:
+                print("Warning incorrect value for range " + start_repeat[0])
+                n = x
             else:
                 n = int(start_repeat[0])
             while n < y:
                 value = create_value_string(value, n)
                 n = n + int(start_repeat[1])
+        
+        #manage the list options
         elif "," in requested_input:
             start_repeat = requested_input.split(",")
             for n in start_repeat:
                 value = create_value_string(value, n)
+
+        #manage the range options. Check that the ranges fit
         elif "-" in requested_input:
             start_repeat = requested_input.split("-")
+            if int(start_repeat[0]) < x:
+                print("Warning incorrect value for range " + start_repeat[0])
+                start_repeat[0] = x
             if int(start_repeat[1]) > y:
                 print("Warning incorrect value for range " + start_repeat[1])
-                start_repeat[1] = y
-            full_range = range(int(start_repeat[0]), int(start_repeat[1])+1)
+                #This has a -1 because we add one on full range to suit everything else
+                start_repeat[1] = y - 1
+            full_range = range(int(start_repeat[0]), int(start_repeat[1]) + 1)
             for n in full_range:
                 value = create_value_string(value, n)
-        else:
+        
+        #check single ints are within the required range
+        elif int(requested_input) in range(x, y):
             value = requested_input
 
+        #if we don't match raise a value error
+        else:
+            raise ValueError("Input does not match patterns")
+
         return value
+
+    #this exception means that all bad characters get thrown out
     except ValueError as error:
         print(error)
         print("Please confirm your cron information is correct")
         help()
-        sys.exit(errno.EACCES)
+        sys.exit(error)
 
 
 def main(inputs):
-    print(inputs)
-    if len(inputs) < 2:
-        help()
-        sys.exit("Input missing")
+    """
+    Takes a cron entry and returns the infomation on when it will run and the command called
 
+    Will warn and fix if the values are out of bounds of the numbers allowed.
+
+    If a sensible choice cant be made the program fails out
+
+    Any failure displays the help text to assist with problem resolution
+
+    """
+    inputs = inputs.split()
     data_parsed = {}
 
-    split_inputs = inputs[1].split()
-    if len(split_inputs) != 6:
+    # safety check that all info is there
+    if len(inputs) != 6:
         help()
         sys.exit("cron construction not right")
-    
+
+    #Map the inputs to the values they should represent
     split_names = {
-        "minutes": split_inputs[0],
-        "hours": split_inputs[1],
-        "day of month": split_inputs[2],
-        "month": split_inputs[3],
-        "day of week": split_inputs[4],
+        "minutes": inputs[0],
+        "hours": inputs[1],
+        "day of month": inputs[2],
+        "month": inputs[3],
+        "day of week": inputs[4],
     }
-    
+
+    #pass the data for processing
     for key in split_names:
         processed_value = process_values(split_names[key], key)
         data_parsed[key] = processed_value
 
-    data_parsed["command"] = split_inputs[5]
+    #Not mapped as its a straight return value
+    data_parsed["command"] = inputs[5]
 
     return data_parsed
 
 
 if __name__ == "__main__":
-    parsed = main(sys.argv)
+    if len(sys.argv) < 2:
+        help()
+        sys.exit("Input missing")
+    parsed = main(sys.argv[1])
     for k in parsed:
-        print(f"{k} {parsed[k]:13}")
+        print(f"{k:13} {parsed[k]}")
