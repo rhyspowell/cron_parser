@@ -22,7 +22,7 @@ def test_main(capsys):
     assert "Expected" in out
 
     with pytest.raises(SystemExit):
-        main(["../cron_parser/cron_parser.py", "1-5 * * * * "])
+        main("1-5 * * * * ")
     out, err = capsys.readouterr()
     assert "Expected" in out
 
