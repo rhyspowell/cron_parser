@@ -1,6 +1,4 @@
-import sys
-
-data_parsed = {}
+import sys, errno
 
 
 def help():
@@ -13,7 +11,7 @@ def help():
     cron is expected to follow the cron standard without special item spans
     see https://en.wikipedia.org/wiki/Cron
 
-    please wrap the cron script in \" as diffrent shells behave differently
+    please wrap the cron script in \" as different shells behave differently
     """
     )
 
@@ -31,63 +29,76 @@ def process_values(requested_input, value_type):
 
     options = {
         "minutes": (0, 60),
-        "hours": (0, 60),
-        "dom": (0, 31),
-        "month": (1, 12),
-        "dow": (1, 7),
+        "hours": (0, 24),
+        "day of month": (1, 32),
+        "month": (1, 13),
+        "day of week": (0, 7),
     }
     if value_type in options:
         x = options[value_type][0]
         y = options[value_type][1]
 
-    value = ""
-    if requested_input == "*":
-        print("*")
-        for n in range(x, y):
-            value = create_value_string(value, n)
-    elif "/" in requested_input:
-        print("/")
-        start_repeat = requested_input.split("/")
-        if start_repeat[0] == "*":
-            n = 0
-        else:
-            n = int(start_repeat[0])
-        while n < y:
-            value = create_value_string(value, n)
-            n = n + int(start_repeat[1])
-    elif "," in requested_input:
-        print(",")
-        start_repeat = requested_input.split(",")
-        for n in start_repeat:
-            value = create_value_string(value, n)
-    else:
-        print("Single value")
-        value = requested_input
 
-    return value
+    value = ""
+    try:
+        if requested_input == "*":
+            for n in range(x, y):
+                value = create_value_string(value, n)
+        elif "/" in requested_input:
+            start_repeat = requested_input.split("/")
+            if start_repeat[0] == "*":
+                n = 0
+            else:
+                n = int(start_repeat[0])
+            while n < y:
+                value = create_value_string(value, n)
+                n = n + int(start_repeat[1])
+        elif "," in requested_input:
+            start_repeat = requested_input.split(",")
+            for n in start_repeat:
+                value = create_value_string(value, n)
+        elif "-" in requested_input:
+            start_repeat = requested_input.split("-")
+            if int(start_repeat[1]) > y:
+                print("Warning incorrect value for range " + start_repeat[1])
+                start_repeat[1] = y
+            full_range = range(int(start_repeat[0]), int(start_repeat[1])+1)
+            for n in full_range:
+                value = create_value_string(value, n)
+        else:
+            value = requested_input
+
+        return value
+    except ValueError as error:
+        print(error)
+        print("Please confirm your cron information is correct")
+        help()
+        sys.exit(errno.EACCES)
 
 
 def main(inputs):
     if len(inputs) < 2:
         help()
-        return 1
+        sys.exit("Inputs missing")
+
+    data_parsed = {}
 
     split_inputs = inputs[1].split()
-
-    minutes_value = process_values(split_inputs[0], "minutes")
-    data_parsed["minute"] = minutes_value
-
-    hours_value = process_values(split_inputs[1], "hours")
-    data_parsed["hours"] = hours_value
-
-    dom_value = process_values(split_inputs[2], "dom")
-    data_parsed["day of month"] = dom_value
-
-    month_value = process_values(split_inputs[3], "month")
-    data_parsed["month"] = dom_value
-
-    month_value = process_values(split_inputs[4], "dow")
-    data_parsed["day of week"] = dom_value
+    if len(split_inputs) != 6:
+        help()
+        sys.exit()
+    
+    split_names = {
+        "minutes": split_inputs[0],
+        "hours": split_inputs[1],
+        "day of month": split_inputs[2],
+        "month": split_inputs[3],
+        "day of week": split_inputs[4],
+    }
+    
+    for key in split_names:
+        processed_value = process_values(split_names[key], key)
+        data_parsed[key] = processed_value
 
     data_parsed["command"] = split_inputs[5]
 
