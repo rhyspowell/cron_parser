@@ -38,7 +38,6 @@ def process_values(requested_input, value_type):
         x = options[value_type][0]
         y = options[value_type][1]
 
-
     value = ""
     try:
         if requested_input == "*":
@@ -47,7 +46,10 @@ def process_values(requested_input, value_type):
         elif "/" in requested_input:
             start_repeat = requested_input.split("/")
             if start_repeat[0] == "*":
-                n = 0
+                n = x
+            elif int(start_repeat[0]) < x:
+                print("Warning incorrect value for range " + start_repeat[0])
+                n = x
             else:
                 n = int(start_repeat[0])
             while n < y:
@@ -59,23 +61,26 @@ def process_values(requested_input, value_type):
                 value = create_value_string(value, n)
         elif "-" in requested_input:
             start_repeat = requested_input.split("-")
+            if int(start_repeat[0]) < x:
+                print("Warning incorrect value for range " + start_repeat[0])
+                start_repeat[0] = x
             if int(start_repeat[1]) > y:
                 print("Warning incorrect value for range " + start_repeat[1])
-                start_repeat[1] = y
-            full_range = range(int(start_repeat[0]), int(start_repeat[1])+1)
+                start_repeat[1] = y - 1
+            full_range = range(int(start_repeat[0]), int(start_repeat[1]) + 1)
             for n in full_range:
                 value = create_value_string(value, n)
-        elif requested_input in range(x, y):
+        elif int(requested_input) in range(x, y):
             value = requested_input
         else:
             raise ValueError("Input does not match patterns")
-            
+
         return value
     except ValueError as error:
         print(error)
         print("Please confirm your cron information is correct")
         help()
-        sys.exit(errno.EACCES)
+        sys.exit(error)
 
 
 def main(inputs):
@@ -89,7 +94,7 @@ def main(inputs):
     if len(split_inputs) != 6:
         help()
         sys.exit("cron construction not right")
-    
+
     split_names = {
         "minutes": split_inputs[0],
         "hours": split_inputs[1],
@@ -97,7 +102,7 @@ def main(inputs):
         "month": split_inputs[3],
         "day of week": split_inputs[4],
     }
-    
+
     for key in split_names:
         processed_value = process_values(split_names[key], key)
         data_parsed[key] = processed_value
