@@ -1,4 +1,4 @@
-import sys
+import sys, errno
 
 
 def help():
@@ -11,7 +11,7 @@ def help():
     cron is expected to follow the cron standard without special item spans
     see https://en.wikipedia.org/wiki/Cron
 
-    please wrap the cron script in \" as diffrent shells behave differently
+    please wrap the cron script in \" as different shells behave differently
     """
     )
 
@@ -26,8 +26,6 @@ def create_value_string(value, n):
 
 
 def process_values(requested_input, value_type):
-    print(requested_input)
-    print(value_type)
 
     options = {
         "minutes": (0, 60),
@@ -40,41 +38,56 @@ def process_values(requested_input, value_type):
         x = options[value_type][0]
         y = options[value_type][1]
 
-    value = ""
-    if requested_input == "*":
-        print("*")
-        for n in range(x, y):
-            value = create_value_string(value, n)
-    elif "/" in requested_input:
-        print("/")
-        start_repeat = requested_input.split("/")
-        if start_repeat[0] == "*":
-            n = 0
-        else:
-            n = int(start_repeat[0])
-        while n < y:
-            value = create_value_string(value, n)
-            n = n + int(start_repeat[1])
-    elif "," in requested_input:
-        print(",")
-        start_repeat = requested_input.split(",")
-        for n in start_repeat:
-            value = create_value_string(value, n)
-    else:
-        print("Single value")
-        value = requested_input
 
-    return value
+    value = ""
+    try:
+        if requested_input == "*":
+            for n in range(x, y):
+                value = create_value_string(value, n)
+        elif "/" in requested_input:
+            start_repeat = requested_input.split("/")
+            if start_repeat[0] == "*":
+                n = 0
+            else:
+                n = int(start_repeat[0])
+            while n < y:
+                value = create_value_string(value, n)
+                n = n + int(start_repeat[1])
+        elif "," in requested_input:
+            start_repeat = requested_input.split(",")
+            for n in start_repeat:
+                value = create_value_string(value, n)
+        elif "-" in requested_input:
+            start_repeat = requested_input.split("-")
+            if int(start_repeat[1]) > y:
+                print("Warning incorrect value for range " + start_repeat[1])
+                start_repeat[1] = y
+            full_range = range(int(start_repeat[0]), int(start_repeat[1])+1)
+            for n in full_range:
+                value = create_value_string(value, n)
+        else:
+            value = requested_input
+
+        return value
+    except ValueError as error:
+        print(error)
+        print("Please confirm your cron information is correct")
+        help()
+        sys.exit(errno.EACCES)
 
 
 def main(inputs):
     if len(inputs) < 2:
         help()
-        return 1
+        sys.exit()
 
     data_parsed = {}
 
     split_inputs = inputs[1].split()
+    if len(split_inputs) != 6:
+        help()
+        sys.exit()
+    
     split_names = {
         "minutes": split_inputs[0],
         "hours": split_inputs[1],
@@ -82,7 +95,7 @@ def main(inputs):
         "month": split_inputs[3],
         "day of week": split_inputs[4],
     }
-
+    
     for key in split_names:
         processed_value = process_values(split_names[key], key)
         data_parsed[key] = processed_value
